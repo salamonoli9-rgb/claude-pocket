@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#15151b">
+<title>Claude Pocket</title>
+<link rel="stylesheet" href="vendor/xterm.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== wybór języka (pierwsze uruchomienie) ===== -->
+  <section id="lang" class="screen hidden">
+    <div class="pair-box lang-box">
+      <div class="lang-hi" aria-hidden="true">👋</div>
+      <h1>Claude Pocket</h1>
+      <p class="muted" data-i18n="lang_title">Wybierz język</p>
+      <div class="lang-grid" id="lang-grid"></div>
+      <p class="muted small" data-i18n="lang_sub">Zmienisz go później w Ustawieniach.</p>
+    </div>
+  </section>
+
+  <!-- ===== parowanie z komputerem ===== -->
+  <section id="pair" class="screen">
+    <div class="pair-box">
+      <div class="pair-ghost" aria-hidden="true"><svg class="ghost" viewBox="0 0 120 130">
+      <defs>
+        <radialGradient id="gbody2" cx="40%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#ffb48f"/>
+          <stop offset="55%" stop-color="#e8875f"/>
+          <stop offset="100%" stop-color="#c4603b"/>
+        </radialGradient>
+      </defs>
+      <ellipse class="shadow" cx="60" cy="126" rx="30" ry="4"/>
+      <path class="body" fill="url(#gbody2)" d="M60 8 C28 8 14 34 14 62 L14 104 C14 112 22 114 27 108 C32 102 38 102 42 109 C46 116 54 116 58 109 C62 102 68 102 72 109 C76 116 84 116 88 109 C92 102 98 102 102 108 C106 114 106 112 106 104 L106 62 C106 34 92 8 60 8 Z"/>
+      <ellipse class="shine" cx="42" cy="28" rx="11" ry="6" transform="rotate(-25 42 28)"/>
+      <g class="eyes">
+        <ellipse class="eye" cx="45" cy="58" rx="7" ry="9"/>
+        <ellipse class="eye" cx="75" cy="58" rx="7" ry="9"/>
+        <circle class="glint" cx="47" cy="55" r="2.4"/>
+        <circle class="glint" cx="77" cy="55" r="2.4"/>
+      </g>
+      <path class="lid" d="M36 58 Q45 64 54 58 M66 58 Q75 64 84 58"/>
+      <ellipse class="blush" cx="34" cy="72" rx="6" ry="3.5"/>
+      <ellipse class="blush" cx="86" cy="72" rx="6" ry="3.5"/>
+      <path class="mouth" d="M53 74 Q60 81 67 74"/>
+      <ellipse class="mouth-o" cx="60" cy="77" rx="5" ry="6"/>
+    </svg></div>
+      <h1>Claude Pocket</h1>
+      <p class="muted" data-i18n="pair_intro">Połącz telefon z komputerem. Oba urządzenia muszą być w tej samej sieci Wi‑Fi.</p>
+      <label><span data-i18n="pair_host">Adres komputera</span>
+        <input id="pair-host" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="np. 192.168.1.20:8765" data-i18n-ph="pair_host_ph">
+      </label>
+      <label><span data-i18n="pair_code">Kod parowania</span>
+        <input id="pair-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX">
+      </label>
+      <div class="pair-help">
+        <p class="ph-need" data-i18n="ph_need"><b>Najpierw:</b> na komputerze musi być zainstalowany <b>Claude Code</b> (claude.com/claude-code) i trzeba się w nim raz zalogować. Bez niego działa tylko zwykły terminal i nie ma limitów.</p>
+        <b data-i18n="ph_which">Jaki masz komputer?</b>
+        <div class="os-pick">
+          <button type="button" class="os-btn" data-os="linux"><span class="os-ico">🐧</span><b>Linux</b><small>Mint, Ubuntu, Debian, Fedora, Arch…</small></button>
+          <button type="button" class="os-btn" data-os="windows"><span class="os-ico">🪟</span><b>Windows</b><small data-i18n="os_win_small">Windows 10 i 11</small></button>
+        </div>
+        <div class="os-help" data-for="linux">
+          <p class="ph-sub" data-i18n="lin_sub">Działa na: <b>Linux Mint</b> i <b>Ubuntu</b> (sprawdzone), a także Debian, Pop!_OS, Fedora, Arch, Manjaro, openSUSE i podobnych – wystarczy Python 3.8+, który prawie każdy Linux ma od razu.</p>
+          <ol>
+            <li data-i18n="lin_1"><b>Nie masz programu?</b> Stuknij przycisk niżej – instalator zapisze się w <i>Pobranych</i> i od razu możesz go wysłać (mail, Quick Share, Dysk) albo skopiować kablem.</li>
+            <li data-i18n="lin_2">Na komputerze otwórz terminal w folderze z plikiem i wpisz:<br><code>bash claude-pocket-pc.sh</code><br>Na końcu wypisze <b>adres</b> i <b>kod</b> – przepisz je tutaj.</li>
+            <li data-i18n="lin_3"><b>Masz już program?</b> Kod pokaże komenda <code>claude-pocket-kod</code>. Komputer z panelem rice: duży zegar → Ustawienia → Telefon → <b>Pokaż kod</b>.</li>
+          </ol>
+        </div>
+        <div class="os-help" data-for="windows">
+          <p class="ph-sub" data-i18n="win_sub">Działa na <b>Windows 10</b> (wersja 1809 lub nowsza) i <b>Windows 11</b>. Jeśli brakuje Pythona, instalator sam zaproponuje jego instalację.</p>
+          <ol>
+            <li data-i18n="win_1"><b>Nie masz programu?</b> Stuknij przycisk niżej i przenieś plik na komputer: Quick Share, Dysk Google albo kablem (Gmail blokuje pliki <i>.bat</i>).</li>
+            <li data-i18n="win_2">Na komputerze kliknij dwa razy <code>claude-pocket-windows.bat</code>. Gdy pojawi się „System Windows ochronił ten komputer” – <b>Więcej informacji → Uruchom mimo to</b>. Gdy zapora zapyta o Pythona – zaznacz <b>Sieci prywatne</b> i <b>Zezwól</b>.</li>
+            <li data-i18n="win_3">Na końcu zobaczysz <b>adres</b> i <b>kod</b>. Później znajdziesz je w menu Start → <b>Claude Pocket – kod</b>.</li>
+          </ol>
+        </div>
+        <button type="button" class="btn ph-dl" id="pc-installer" data-i18n="pc_inst">⬇ Zapisz instalator na komputer</button>
+        <p id="pc-installer-msg" class="ph-msg"></p>
+        <p class="ph-warn" data-i18n="ph_warn">W domu telefon i komputer muszą być w tym samym Wi‑Fi. Kodu nie podawaj obcym – daje dostęp do terminala komputera.</p>
+        <details class="ph-away"><summary><b data-i18n="away_title">Poza domem (Tailscale)</b></summary>
+          <ol>
+            <li data-i18n="away_1">Zainstaluj darmową aplikację <b>Tailscale</b> na telefonie (Sklep Play) i na komputerze (tailscale.com/download).</li>
+            <li data-i18n="away_2">Zaloguj się w obu <b>na to samo konto</b> (np. Google) i włącz połączenie.</li>
+            <li data-i18n="away_3">Połącz się raz w domu przez Wi‑Fi – aplikacja sama zapamięta adres Tailscale komputera (100.x.x.x) i poza domem przełączy się na niego.</li>
+            <li data-i18n="away_4">Komputer musi być włączony, a Tailscale włączony na obu urządzeniach.</li>
+          </ol>
+        </details>
+      </div>
+      <button id="pair-go" class="btn primary" data-i18n="pair_go">Połącz</button>
+      <p id="pair-err" class="err"></p>
+    </div>
+  </section>
+
+  <!-- ===== główna aplikacja ===== -->
+  <section id="main" class="screen hidden">
+    <header class="top">
+      <div class="brand"><span class="spark">✦</span> Claude Pocket</div>
+      <div class="conn" id="conn"><i></i><span data-i18n="connecting">łączę…</span></div>
+    </header>
+
+    <main class="pages">
+      <!-- LIMITY -->
+      <div class="page" id="page-limits">
+        <div class="limit-row">
+          <div class="card limit" id="lim-h5">
+            <svg class="ring" viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg>
+            <div class="ring-pct">–</div>
+            <div class="lim-title" data-i18n="lim_h5">⚡ Limit 5‑godzinny</div>
+            <div class="lim-left">–</div>
+            <div class="lim-reset muted">–</div>
+          </div>
+          <div class="card limit" id="lim-d7">
+            <svg class="ring" viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg>
+            <div class="ring-pct">–</div>
+            <div class="lim-title" data-i18n="lim_d7">📅 Limit tygodniowy</div>
+            <div class="lim-left">–</div>
+            <div class="lim-reset muted">–</div>
+          </div>
+        </div>
+
+        <div class="card days">
+          <div class="days-head"><b data-i18n="days_title">Zużycie dzienne</b><span class="muted" data-i18n="days_tap"> · dotknij dzień</span>
+            <button class="icon-btn" id="refresh" title="Odśwież" data-i18n-title="refresh">⟳</button></div>
+          <div class="heat-wrap"><div class="heat" id="heat"></div></div>
+          <div class="legend muted"><span data-i18n="less">mniej</span> <i class="c l0"></i><i class="c l1"></i><i class="c l2"></i><i class="c l3"></i><i class="c l4"></i> <span data-i18n="more">więcej</span></div>
+        </div>
+
+        <div class="card day" id="day">
+          <div class="day-t">–</div>
+          <div class="day-big">–</div>
+          <div class="day-sub muted">–</div>
+          <div class="day-pct">–</div>
+        </div>
+        <p class="muted small" id="updated"></p>
+      </div>
+
+      <!-- TERMINAL -->
+      <div class="page hidden" id="page-term">
+        <div class="term-bar">
+          <button class="chip sess" data-session="claude">✦ Claude Code</button>
+          <button class="chip sess" data-session="shell">❯ Terminal</button>
+          <button class="chip" data-send="\x03">Ctrl+C</button>
+          <button class="chip" id="font-minus">A−</button>
+          <button class="chip" id="font-plus">A+</button>
+          <button class="chip" id="term-reconnect">⟳</button>
+        </div>
+        <div id="term"></div>
+        <form class="composer" id="composer" autocomplete="off">
+          <textarea id="tin" rows="1" enterkeyhint="send" placeholder="Napisz do Claude Code…" data-i18n-ph="ph_claude" autocapitalize="sentences" spellcheck="true"></textarea>
+          <button type="submit" id="tsend" aria-label="wyślij">➤</button>
+        </form>
+        <div class="keys">
+          <button data-key="esc">Esc</button>
+          <button data-key="tab">Tab</button>
+          <button data-key="ctrl" id="key-ctrl">Ctrl</button>
+          <button data-wheel="up" title="przewiń w górę" data-i18n-title="scroll_up">⇞</button>
+          <button data-wheel="down" title="przewiń w dół" data-i18n-title="scroll_down">⇟</button>
+          <button data-key="up">↑</button>
+          <button data-key="down">↓</button>
+          <button data-key="left">←</button>
+          <button data-key="right">→</button>
+          <button data-send="|">|</button>
+          <button data-send="~">~</button>
+          <button data-send="/">/</button>
+          <button data-send="-">-</button>
+        </div>
+      </div>
+
+      <!-- DUSZEK -->
+      <div class="page hidden" id="page-pet">
+        <div class="pet-room" id="pet-room">
+          <div class="room-name"><span id="pet-name">Pimpek</span> <button class="icon-btn small" id="rename">✎</button></div>
+          <div class="room-floor"></div>
+        </div>
+        <div class="card stats">
+          <div class="stat"><span data-i18n="stat_food">🍪 Najedzenie</span><div class="bar"><i id="bar-food"></i></div></div>
+          <div class="stat"><span data-i18n="stat_fun">💛 Humor</span><div class="bar"><i id="bar-fun"></i></div></div>
+          <div class="stat"><span data-i18n="stat_energy">⚡ Energia</span><div class="bar"><i id="bar-energy"></i></div></div>
+        </div>
+        <div class="food-head"><span data-i18n="feed">Nakarm</span><span class="muted small" id="fav-hint"></span></div>
+        <div class="food-row" id="food-row"></div>
+        <div class="pet-actions">
+          <button class="btn" id="act-pet" data-i18n="act_pet">🤚 Pogłaszcz</button>
+          <button class="btn" id="act-sleep" data-i18n="act_sleep">😴 Spać</button>
+          <button class="btn" id="act-talk" data-i18n="act_talk">💬 Powiedz coś</button>
+        </div>
+        <div class="skin-pick" id="skin-pick"></div>
+        <div class="eyes-pick">
+          <span class="muted" data-i18n="eyes">Oczy</span>
+          <button class="chip" data-eyes="round" data-i18n="eyes_round_btn">● okrągłe</button>
+          <button class="chip" data-eyes="square" data-i18n="eyes_square_btn">■ kwadratowe</button>
+        </div>
+        <p class="muted small center" data-i18n="pet_hint">Przeciągnij duszka palcem, dotknij, żeby pogłaskać. Chodzi za Tobą po całej aplikacji.</p>
+      </div>
+
+      <!-- USTAWIENIA -->
+      <div class="page hidden" id="page-set">
+        <div class="card">
+          <label class="row"><span data-i18n="set_lang">Język</span><select id="opt-lang" class="lang-select"></select></label>
+        </div>
+        <div class="card">
+          <b data-i18n="set_pc">Komputer</b>
+          <p class="muted" id="set-host">–</p>
+          <p class="muted small" style="margin:6px 0 4px" data-i18n="set_inst">Instalator programu na inny komputer:</p>
+          <div class="row2"><button class="btn" id="pc-inst-linux">🐧 Linux</button><button class="btn" id="pc-inst-win">🪟 Windows</button></div>
+          <p id="pc-installer2-msg" class="muted small"></p>
+          <p class="muted small" id="set-tail" data-i18n="tail_hint">Poza domem: włącz Tailscale w telefonie – apka sama przełączy się na tunel.</p>
+          <button class="btn" id="unpair" data-i18n="unpair">Rozłącz i sparuj ponownie</button>
+        </div>
+        <div class="card">
+          <label class="row"><span data-i18n="opt_float">Duszek na wszystkich ekranach</span><input type="checkbox" id="opt-pet-float" checked></label>
+          <label class="row"><span data-i18n="opt_talk">Duszek gada sam z siebie</span><input type="checkbox" id="opt-pet-talk" checked></label>
+          <label class="row"><span data-i18n="opt_vibe">Wibracje</span><input type="checkbox" id="opt-vibe" checked></label>
+        </div>
+        <p class="muted small center" data-i18n="set_foot">Claude Pocket · limity i terminal łączą się tylko z Twoim komputerem.</p>
+      </div>
+    </main>
+
+    <nav class="tabs">
+      <button data-page="limits" class="on"><span>📊</span><b data-i18n="tab_limits">Limity</b></button>
+      <button data-page="term"><span>💻</span><b data-i18n="tab_term">Terminal</b></button>
+      <button data-page="pet"><span>👻</span><b data-i18n="tab_pet">Duszek</b></button>
+      <button data-page="set"><span>⚙️</span><b data-i18n="tab_set">Ustawienia</b></button>
+    </nav>
+  </section>
+
+  <!-- duszek (pływa nad całą aplikacją) -->
+  <div id="pet" class="hidden" aria-label="duszek" data-i18n-aria="pet_aria">
+    <div class="bubble" id="bubble"></div>
+    <svg class="ghost" viewBox="0 0 120 130">
+      <defs>
+        <radialGradient id="gbody" cx="40%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#ffb48f"/>
+          <stop offset="55%" stop-color="#e8875f"/>
+          <stop offset="100%" stop-color="#c4603b"/>
+        </radialGradient>
+      </defs>
+      <ellipse class="shadow" cx="60" cy="126" rx="30" ry="4"/>
+      <path class="body" fill="url(#gbody)" d="M60 8 C28 8 14 34 14 62 L14 104 C14 112 22 114 27 108 C32 102 38 102 42 109 C46 116 54 116 58 109 C62 102 68 102 72 109 C76 116 84 116 88 109 C92 102 98 102 102 108 C106 114 106 112 106 104 L106 62 C106 34 92 8 60 8 Z"/>
+      <ellipse class="shine" cx="42" cy="28" rx="11" ry="6" transform="rotate(-25 42 28)"/>
+      <g class="eyes-sq">
+        <rect class="eye" x="38" y="49" width="14" height="17" rx="2.5"/>
+        <rect class="eye" x="68" y="49" width="14" height="17" rx="2.5"/>
+        <rect class="glint" x="45" y="52" width="4" height="4"/>
+        <rect class="glint" x="75" y="52" width="4" height="4"/>
+      </g>
+      <g class="eyes">
+        <ellipse class="eye" cx="45" cy="58" rx="7" ry="9"/>
+        <ellipse class="eye" cx="75" cy="58" rx="7" ry="9"/>
+        <circle class="glint" cx="47" cy="55" r="2.4"/>
+        <circle class="glint" cx="77" cy="55" r="2.4"/>
+      </g>
+      <path class="lid" d="M36 58 Q45 64 54 58 M66 58 Q75 64 84 58"/>
+      <ellipse class="blush" cx="34" cy="72" rx="6" ry="3.5"/>
+      <ellipse class="blush" cx="86" cy="72" rx="6" ry="3.5"/>
+      <path class="mouth" d="M53 74 Q60 81 67 74"/>
+      <ellipse class="mouth-o" cx="60" cy="77" rx="5" ry="6"/>
+    </svg>
+  </div>
+  <div id="fx"></div>
+</div>
+
+<script src="vendor/xterm.js"></script>
+<script src="vendor/xterm-addon-fit.js"></script>
+<script src="i18n.js"></script>
+<script src="skins.js"></script>
+<script src="foods.js"></script>
+<script src="lines.js"></script>
+<script src="lines_en.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

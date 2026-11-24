@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# claude-pocket-kod – pokazuje adres komputera i kod parowania dla aplikacji Claude Pocket na telefonie.
+#   claude-pocket-kod          pokaż adres i kod
+#   claude-pocket-kod --nowy   wygeneruj nowy kod (stary przestaje działać – np. żeby komuś odciąć dostęp)
+CFG="$HOME/.config/claude-pocket"; SVC=claude-pocket
+if [ "$1" = "--nowy" ]; then
+  rm -f "$CFG/token"
+  systemctl --user restart $SVC 2>/dev/null || { pkill -f "[c]laude-pocket/server.py"; nohup python3 "$HOME/.local/share/claude-pocket/server.py" >/dev/null 2>&1 & }
+  for i in $(seq 30); do [ -s "$CFG/token" ] && break; sleep 0.3; done
+  echo "Nowy kod wygenerowany – stary już nie działa."
+fi
+if [ ! -s "$CFG/token" ]; then
+  echo "Program Claude Pocket jeszcze nie wystartował (brak kodu). Spróbuj: systemctl --user start claude-pocket"; exit 1
+fi
+B=$'\e[1m'; O=$'\e[38;2;217;119;87m'; D=$'\e[2m'; R=$'\e[0m'
+echo
+echo "  ${O}✦ Claude Pocket – dane do aplikacji na telefonie${R}"
+echo
+ADDRS=$(ip -4 -o addr show scope global 2>/dev/null | awk '$2 !~ /^(docker|br-|veth|virbr)/ {split($4,a,"/"); print a[1]}')
+first=1
+for a in $ADDRS; do
+  case "$a" in
+    100.6[4-9].*|100.[7-9][0-9].*|100.1[01][0-9].*|100.12[0-7].*) echo "  Adres (Tailscale, poza domem): ${B}$a:8765${R}";;
+    10.*|172.1[6-9].*|172.2[0-9].*|172.3[01].*|192.168.*) if [ $first = 1 ]; then echo "  Adres komputera:   ${B}$a:8765${R}"; first=0; else echo "  Inny adres:        $a:8765"; fi;;
+  esac
+done
+[ $first = 1 ] && echo "  Adres komputera:   ${D}nie znalazłem adresu w sieci domowej – podłącz komputer do Wi‑Fi/kabla${R}"
+echo "  Kod parowania:     ${B}${O}$(cat "$CFG/token")${R}"
+echo
+echo "  ${D}Telefon musi być w tym samym Wi‑Fi. Kodu nie podawaj obcym – daje dostęp do terminala.${R}"
+echo "  ${D}Nowy kod (odcina stary): claude-pocket-kod --nowy${R}"
+echo

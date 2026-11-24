@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""claude-pocket-term [claude|shell] – ten sam terminal, który widzisz w telefonie (Claude Pocket).
+
+  claude-pocket-term          wspólny Claude Code (telefon i komputer widzą i sterują tym samym)
+  claude-pocket-term shell    wspólny zwykły terminal
+
+Zamknięcie okna nie kończy sesji – Claude Code działa dalej i czeka na telefon albo ponowne otwarcie."""
+import asyncio, fcntl, json, os, signal, struct, sys, termios, tty
+sys.path.insert(0, os.path.expanduser('~/.local/share/claude-pocket/vendor'))
+import websockets  # noqa: E402
+
+name = sys.argv[1] if len(sys.argv) > 1 else 'claude'
+tok = open(os.path.expanduser('~/.config/claude-pocket/token')).read().strip()
+
+
+def size():
+    r, c = struct.unpack('HH', fcntl.ioctl(0, termios.TIOCGWINSZ, b'\0' * 4))
+    return c, r
+
+
+async def main():
+    c, r = size()
+    url = f'ws://127.0.0.1:8765/term?token={tok}&session={name}&cols={c}&rows={r}'
+    async with websockets.connect(url, max_size=None, ping_interval=20) as ws:
+        loop = asyncio.get_running_loop()
+        old = termios.tcgetattr(0)
+        tty.setraw(0)
+        try:
+            def on_input():
+                d = os.read(0, 4096)
+                if d:
+                    asyncio.ensure_future(ws.send(json.dumps({'t': 'in', 'd': d.decode('utf-8', 'replace')})))
+            def on_resize():
+                cc, rr = size()
+                asyncio.ensure_future(ws.send(json.dumps({'t': 'rs', 'c': cc, 'r': rr})))
+            loop.add_reader(0, on_input)
+            loop.add_signal_handler(signal.SIGWINCH, on_resize)
+            async for msg in ws:
+                os.write(1, msg.encode())
+        except websockets.ConnectionClosed:
+            pass
+        finally:
+            termios.tcsetattr(0, termios.TCSADRAIN, old)
+            # Claude Code włącza mysz i pełny ekran – wyłącz je, inaczej ruch myszką wpisuje do terminala „M35;29;18M…”
+            os.write(1, b'\x1b[?1000l\x1b[?1002l\x1b[?1003l\x1b[?1006l\x1b[?1015l\x1b[?2004l\x1b[?1004l'
+                        b'\x1b[?1049l\x1b[?25h\x1b[0m')
+            os.write(1, b'\r\n[sesja zakonczona albo rozlaczona]\r\n')
+
+
+try:
+    asyncio.run(main())
+except (ConnectionRefusedError, OSError):
+    print('Claude Pocket nie działa (systemctl --user start claude-pocket).')

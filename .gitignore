@@ -1,0 +1,12 @@
+# zbudowane pliki
+android/out/
+pc/dist/
+*.apk
+__pycache__/
+*.pyc
+
+# klucze i hasła – NIGDY do repozytorium
+*.jks
+*.keystore
+*.pass
+token
